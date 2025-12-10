@@ -82,9 +82,11 @@ class MPListSerializer(serializers.ModelSerializer):
             'middle_name',
             'last_name',
             'party',
+            'phone_no',
             'constituency',
             'district',
             'photo',
+            'email',
         ]
 
 

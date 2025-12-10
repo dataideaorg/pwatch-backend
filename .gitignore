@@ -2,6 +2,8 @@
 __pycache__/
 *.py[codz]
 *$py.class
+mps.json
+fix_json.py
 
 # C extensions
 *.so
