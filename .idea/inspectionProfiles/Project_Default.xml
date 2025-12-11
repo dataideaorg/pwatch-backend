@@ -1,0 +1,59 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="Eslint" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <list>
+          <option value="annotated-types" />
+          <option value="certifi" />
+          <option value="charset-normalizer" />
+          <option value="click" />
+          <option value="docker-pycreds" />
+          <option value="et_xmlfile" />
+          <option value="gitdb" />
+          <option value="GitPython" />
+          <option value="idna" />
+          <option value="joblib" />
+          <option value="numpy" />
+          <option value="openpyxl" />
+          <option value="pandas" />
+          <option value="platformdirs" />
+          <option value="protobuf" />
+          <option value="psutil" />
+          <option value="pydantic" />
+          <option value="pydantic_core" />
+          <option value="python-dateutil" />
+          <option value="python-dotenv" />
+          <option value="pytz" />
+          <option value="PyYAML" />
+          <option value="requests" />
+          <option value="rtvpy" />
+          <option value="sentry-sdk" />
+          <option value="setproctitle" />
+          <option value="six" />
+          <option value="smmap" />
+          <option value="typing-inspection" />
+          <option value="typing_extensions" />
+          <option value="tzdata" />
+          <option value="urllib3" />
+          <option value="wandb" />
+          <option value="dataidea" />
+          <option value="imbalanced-learn" />
+          <option value="imblearn" />
+          <option value="narwhals" />
+          <option value="plotly" />
+          <option value="scikit-learn" />
+          <option value="scipy" />
+          <option value="sklearn-compat" />
+          <option value="yt-dlp" />
+          <option value="kaleido" />
+          <option value="nvidia-nccl-cu12" />
+          <option value="polars" />
+          <option value="pyarrow" />
+          <option value="xgboost" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

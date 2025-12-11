@@ -24,3 +24,23 @@ class HeroImage(models.Model):
 
     def __str__(self):
         return self.title or f"Hero Image {self.id}"
+
+
+class Headline(models.Model):
+    """
+    Model for Home Page Headlines (Bottom Marquee)
+    """
+    text = models.CharField(max_length=500, help_text="Headline text to display")
+    is_bold = models.BooleanField(default=False, help_text="Whether to display this headline in bold")
+    order = models.IntegerField(default=0, help_text="Display order (lower numbers appear first)")
+    is_active = models.BooleanField(default=True, help_text="Whether this headline is active")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', 'created_at']
+        verbose_name = 'Headline'
+        verbose_name_plural = 'Headlines'
+
+    def __str__(self):
+        return self.text[:50] + ('...' if len(self.text) > 50 else '')

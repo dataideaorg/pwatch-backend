@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import HeroImage
+from .models import HeroImage, Headline
 
 
 @admin.register(HeroImage)
@@ -18,4 +18,26 @@ class HeroImageAdmin(admin.ModelAdmin):
             'fields': ('order', 'is_active')
         }),
     )
+
+
+@admin.register(Headline)
+class HeadlineAdmin(admin.ModelAdmin):
+    list_display = ['text_preview', 'is_bold', 'order', 'is_active', 'created_at']
+    list_filter = ['is_active', 'is_bold', 'created_at']
+    search_fields = ['text']
+    ordering = ['order', 'created_at']
+    list_editable = ['order', 'is_active', 'is_bold']
+    
+    fieldsets = (
+        ('Headline Information', {
+            'fields': ('text', 'is_bold')
+        }),
+        ('Display Settings', {
+            'fields': ('order', 'is_active')
+        }),
+    )
+
+    def text_preview(self, obj):
+        return obj.text[:60] + ('...' if len(obj.text) > 60 else '')
+    text_preview.short_description = 'Text'
 
