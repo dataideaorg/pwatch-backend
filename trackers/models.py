@@ -175,3 +175,120 @@ class DebtData(models.Model):
 
     def __str__(self):
         return f"{self.year} - Debt: UGX {self.national_debt:,.0f}M, GDP: UGX {self.gdp:,.0f}M"
+
+
+class Loan(models.Model):
+    """Model for Government Loans and Projects"""
+    SECTOR_CHOICES = [
+        ('energy', 'Energy'),
+        ('transport', 'Transport'),
+        ('health', 'Health'),
+        ('education', 'Education'),
+        ('agriculture', 'Agriculture'),
+        ('water', 'Water and Sanitation'),
+        ('ict', 'ICT'),
+        ('infrastructure', 'Infrastructure'),
+        ('other', 'Other'),
+    ]
+
+    CURRENCY_CHOICES = [
+        ('USD', 'US Dollar'),
+        ('EUR', 'Euro'),
+        ('GBP', 'British Pound'),
+        ('CNY', 'Chinese Yuan'),
+        ('UGX', 'Uganda Shilling'),
+    ]
+
+    SOURCE_CHOICES = [
+        ('world_bank', 'World Bank'),
+        ('imf', 'International Monetary Fund'),
+        ('adb', 'African Development Bank'),
+        ('china', 'China'),
+        ('eu', 'European Union'),
+        ('bilateral', 'Bilateral Agreement'),
+        ('other', 'Other'),
+    ]
+
+    sector = models.CharField(max_length=50, choices=SECTOR_CHOICES)
+    label = models.CharField(max_length=500, help_text="Project name or description")
+    approved_amount = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        help_text="Approved loan amount"
+    )
+    currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='USD')
+    source = models.CharField(
+        max_length=50,
+        choices=SOURCE_CHOICES,
+        help_text="Loan source/creditor"
+    )
+    approval_date = models.DateField(null=True, blank=True)
+    description = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-approval_date', '-created_at']
+        verbose_name = 'Loan'
+        verbose_name_plural = 'Loans'
+
+    def __str__(self):
+        return f"{self.get_sector_display()}: {self.label[:50]}"
+
+class Hansard(models.Model):
+    """Model for Hansards"""
+    name = models.CharField(
+        max_length=50,
+        help_text="Hansard name"
+    )
+    date = models.DateField(null=True, blank=True)
+    file = models.FileField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+        verbose_name = 'Hansard'
+        verbose_name_plural = 'Hansards'
+
+    def __str__(self):
+        return self.name
+
+
+class Budget(models.Model):
+    """Model for National Budget Documents"""
+    name = models.CharField(max_length=200, help_text="Budget document name")
+    financial_year = models.CharField(max_length=20, help_text="Financial year (e.g., 2024/2025)")
+    file = models.FileField(upload_to='budgets/', help_text="Budget PDF document")
+    budget_total_amount = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Total budget amount in UGX"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-financial_year', '-created_at']
+        verbose_name = 'Budget'
+        verbose_name_plural = 'Budgets'
+
+    def __str__(self):
+        return f"{self.name} - {self.financial_year}"
+
+class OrderPaper(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(null=True, blank=True)
+    file = models.FileField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Order Paper'
+        ordering = ['-created_at']
+
+

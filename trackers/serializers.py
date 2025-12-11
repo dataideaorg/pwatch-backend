@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Bill, BillReading, MP, DebtData
+from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget
 
 
 class BillReadingSerializer(serializers.ModelSerializer):
@@ -130,6 +130,65 @@ class DebtDataSerializer(serializers.ModelSerializer):
             'gdp_per_capita',
             'per_capita_income',
             'population',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+
+
+class LoanSerializer(serializers.ModelSerializer):
+    """Serializer for Loans"""
+    sector_display = serializers.CharField(source='get_sector_display', read_only=True)
+    currency_display = serializers.CharField(source='get_currency_display', read_only=True)
+    source_display = serializers.CharField(source='get_source_display', read_only=True)
+
+    class Meta:
+        model = Loan
+        fields = [
+            'id',
+            'sector',
+            'sector_display',
+            'label',
+            'approved_amount',
+            'currency',
+            'currency_display',
+            'source',
+            'source_display',
+            'approval_date',
+            'description',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+
+
+class HansardSerializer(serializers.ModelSerializer):
+    """Serializer for Hansards"""
+
+    class Meta:
+        model = Hansard
+        fields = [
+            'id',
+            'name',
+            'date',
+            'file',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+
+
+class BudgetSerializer(serializers.ModelSerializer):
+    """Serializer for Budgets"""
+
+    class Meta:
+        model = Budget
+        fields = [
+            'id',
+            'name',
+            'financial_year',
+            'file',
+            'budget_total_amount',
             'created_at',
             'updated_at',
         ]

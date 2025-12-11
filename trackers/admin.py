@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Bill, BillReading, MP, DebtData
+from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget
 
 
 class BillReadingInline(admin.TabularInline):
@@ -90,5 +90,58 @@ class DebtDataAdmin(admin.ModelAdmin):
         }),
         ('Population', {
             'fields': ('population',)
+        }),
+    )
+
+
+@admin.register(Loan)
+class LoanAdmin(admin.ModelAdmin):
+    list_display = ['sector', 'label', 'approved_amount', 'currency', 'source', 'approval_date']
+    list_filter = ['sector', 'currency', 'source', 'approval_date']
+    search_fields = ['label', 'description', 'sector']
+    ordering = ['-approval_date', '-created_at']
+    date_hierarchy = 'approval_date'
+
+    fieldsets = (
+        ('Loan Information', {
+            'fields': ('sector', 'label', 'description')
+        }),
+        ('Financial Details', {
+            'fields': ('approved_amount', 'currency')
+        }),
+        ('Source Information', {
+            'fields': ('source', 'approval_date')
+        }),
+    )
+
+
+@admin.register(Hansard)
+class HansardAdmin(admin.ModelAdmin):
+    list_display = ['name', 'date', 'file', 'created_at']
+    list_filter = ['date']
+    search_fields = ['name']
+    ordering = ['-date', '-created_at']
+    date_hierarchy = 'date'
+
+    fieldsets = (
+        ('Hansard Information', {
+            'fields': ('name', 'date', 'file')
+        }),
+    )
+
+
+@admin.register(Budget)
+class BudgetAdmin(admin.ModelAdmin):
+    list_display = ['name', 'financial_year', 'budget_total_amount', 'file', 'created_at']
+    list_filter = ['financial_year']
+    search_fields = ['name', 'financial_year']
+    ordering = ['-financial_year', '-created_at']
+
+    fieldsets = (
+        ('Budget Information', {
+            'fields': ('name', 'financial_year', 'budget_total_amount')
+        }),
+        ('Document', {
+            'fields': ('file',)
         }),
     )
