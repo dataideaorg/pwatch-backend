@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import XSpace
+from .models import XSpace, Podcast, Gallery
 
 
 @admin.register(XSpace)
@@ -25,6 +25,52 @@ class XSpaceAdmin(admin.ModelAdmin):
         }),
         ('Details', {
             'fields': ('topics', 'speakers')
+        }),
+    )
+
+
+@admin.register(Podcast)
+class PodcastAdmin(admin.ModelAdmin):
+    list_display = ['title', 'host', 'guest', 'published_date', 'episode_number']
+    list_filter = ['category', 'published_date']
+    search_fields = ['title', 'description', 'host', 'guest', 'tags']
+    date_hierarchy = 'published_date'
+    ordering = ['-published_date', '-created_at']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('title', 'description', 'host', 'guest')
+        }),
+        ('Episode Details', {
+            'fields': ('episode_number', 'published_date', 'duration')
+        }),
+        ('YouTube', {
+            'fields': ('youtube_url', 'thumbnail')
+        }),
+        ('Categorization', {
+            'fields': ('category', 'tags')
+        }),
+    )
+
+
+@admin.register(Gallery)
+class GalleryAdmin(admin.ModelAdmin):
+    list_display = ['title', 'category', 'event_date', 'photographer', 'featured', 'created_at']
+    list_filter = ['category', 'featured', 'event_date']
+    search_fields = ['title', 'description', 'photographer', 'tags']
+    date_hierarchy = 'event_date'
+    ordering = ['-featured', '-event_date', '-created_at']
+    list_editable = ['featured']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('title', 'description', 'image')
+        }),
+        ('Details', {
+            'fields': ('category', 'event_date', 'photographer')
+        }),
+        ('Organization', {
+            'fields': ('tags', 'featured')
         }),
     )
 

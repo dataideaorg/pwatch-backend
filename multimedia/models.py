@@ -43,3 +43,38 @@ class XSpace(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Podcast(models.Model):
+    """
+    Model for YouTube Podcasts
+    """
+    title = models.CharField(max_length=200, help_text="Title of the podcast episode")
+    description = models.TextField(blank=True, help_text="Description of the podcast episode")
+    host = models.CharField(max_length=200, help_text="Host or presenter of the podcast")
+    guest = models.CharField(max_length=200, blank=True, help_text="Guest speaker(s) if any")
+    youtube_url = models.URLField(help_text="URL to the YouTube video")
+    thumbnail = models.ImageField(upload_to='podcasts/', blank=True, null=True, help_text="Thumbnail image for the podcast")
+    duration = models.IntegerField(null=True, blank=True, help_text="Duration in minutes")
+    published_date = models.DateTimeField(help_text="Date when the podcast was published")
+    episode_number = models.IntegerField(null=True, blank=True, help_text="Episode number if applicable")
+    category = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Category or topic of the podcast"
+    )
+    tags = models.CharField(
+        max_length=500,
+        blank=True,
+        help_text="Comma-separated list of tags"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-published_date', '-created_at']
+        verbose_name = 'Podcast'
+        verbose_name_plural = 'Podcasts'
+
+    def __str__(self):
+        return self.title

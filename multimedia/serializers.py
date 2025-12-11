@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import XSpace
+from .models import XSpace, Podcast, Gallery
 
 
 class XSpaceSerializer(serializers.ModelSerializer):
@@ -21,6 +21,45 @@ class XSpaceSerializer(serializers.ModelSerializer):
             'status_display',
             'topics',
             'speakers',
+            'created_at',
+            'updated_at',
+        ]
+
+
+class PodcastSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Podcast
+        fields = [
+            'id',
+            'title',
+            'description',
+            'host',
+            'guest',
+            'youtube_url',
+            'thumbnail',
+            'duration',
+            'published_date',
+            'episode_number',
+            'category',
+            'tags',
+            'created_at',
+            'updated_at',
+        ]
+
+
+class GallerySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Gallery
+        fields = [
+            'id',
+            'title',
+            'description',
+            'image',
+            'category',
+            'event_date',
+            'photographer',
+            'tags',
+            'featured',
             'created_at',
             'updated_at',
         ]
