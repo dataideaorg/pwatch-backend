@@ -3,8 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Bill, BillReading, MP
-from .serializers import BillSerializer, BillListSerializer, BillReadingSerializer, MPListSerializer, MPDetailSerializer
+from .models import Bill, BillReading, MP, DebtData
+from .serializers import BillSerializer, BillListSerializer, BillReadingSerializer, MPListSerializer, MPDetailSerializer, DebtDataSerializer
 
 
 class BillViewSet(viewsets.ModelViewSet):
@@ -85,3 +85,26 @@ class MPViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return MPListSerializer
         return MPDetailSerializer
+
+
+class DebtDataViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for National Debt and Economic Data
+
+    Provides historical debt and economic metrics
+    """
+    queryset = DebtData.objects.all().order_by('year')
+    serializer_class = DebtDataSerializer
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['year']
+    ordering_fields = ['year']
+    ordering = ['year']
+
+    @action(detail=False, methods=['get'])
+    def latest(self, request):
+        """Get the latest debt data"""
+        latest_data = DebtData.objects.order_by('-year').first()
+        if latest_data:
+            serializer = self.get_serializer(latest_data)
+            return Response(serializer.data)
+        return Response({})

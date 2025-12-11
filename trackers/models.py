@@ -108,3 +108,70 @@ class MP(models.Model):
             name_parts.append(self.last_name)
             self.name = ' '.join(name_parts)
         super().save(*args, **kwargs)
+
+
+class DebtData(models.Model):
+    """Model for National Debt and Economic Data"""
+    year = models.IntegerField(unique=True, help_text="Year of the data")
+
+    # Debt metrics (in millions UGX)
+    national_debt = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        help_text="National debt in millions UGX"
+    )
+    gdp = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        help_text="GDP in millions UGX"
+    )
+    interest = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        default=0,
+        help_text="Interest payments in millions UGX"
+    )
+    total_expenditure = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        default=0,
+        help_text="Total government expenditure in millions UGX"
+    )
+
+    # Per capita metrics
+    debt_per_citizen = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0,
+        help_text="Debt per citizen in UGX"
+    )
+    gdp_per_capita = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0,
+        help_text="GDP per capita in UGX"
+    )
+    per_capita_income = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0,
+        help_text="Per capita income in UGX"
+    )
+
+    # Metadata
+    population = models.BigIntegerField(
+        null=True,
+        blank=True,
+        help_text="Population for the year"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['year']
+        verbose_name = 'Debt Data'
+        verbose_name_plural = 'Debt Data'
+
+    def __str__(self):
+        return f"{self.year} - Debt: UGX {self.national_debt:,.0f}M, GDP: UGX {self.gdp:,.0f}M"

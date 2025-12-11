@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Bill, BillReading, MP
+from .models import Bill, BillReading, MP, DebtData
 
 
 class BillReadingSerializer(serializers.ModelSerializer):
@@ -108,6 +108,28 @@ class MPDetailSerializer(serializers.ModelSerializer):
             'email',
             'photo',
             'bio',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+
+
+class DebtDataSerializer(serializers.ModelSerializer):
+    """Serializer for Debt Data"""
+
+    class Meta:
+        model = DebtData
+        fields = [
+            'id',
+            'year',
+            'national_debt',
+            'gdp',
+            'interest',
+            'total_expenditure',
+            'debt_per_citizen',
+            'gdp_per_capita',
+            'per_capita_income',
+            'population',
             'created_at',
             'updated_at',
         ]

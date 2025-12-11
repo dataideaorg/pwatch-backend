@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Bill, BillReading, MP
+from .models import Bill, BillReading, MP, DebtData
 
 
 class BillReadingInline(admin.TabularInline):
@@ -67,5 +67,28 @@ class MPAdmin(admin.ModelAdmin):
         }),
         ('Biography', {
             'fields': ('bio',)
+        }),
+    )
+
+
+@admin.register(DebtData)
+class DebtDataAdmin(admin.ModelAdmin):
+    list_display = ['year', 'national_debt', 'gdp', 'interest', 'total_expenditure']
+    list_filter = ['year']
+    search_fields = ['year']
+    ordering = ['-year']
+
+    fieldsets = (
+        ('Year', {
+            'fields': ('year',)
+        }),
+        ('Debt Metrics (Millions UGX)', {
+            'fields': ('national_debt', 'gdp', 'interest', 'total_expenditure')
+        }),
+        ('Per Capita Metrics (UGX)', {
+            'fields': ('debt_per_citizen', 'gdp_per_capita', 'per_capita_income')
+        }),
+        ('Population', {
+            'fields': ('population',)
         }),
     )
