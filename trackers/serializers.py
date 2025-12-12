@@ -272,3 +272,49 @@ class CommitteeDetailSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
         read_only_fields = ['created_at', 'updated_at']
+
+
+# Lightweight serializers for home page summary
+class HomeSummaryMPSerializer(serializers.ModelSerializer):
+    """Minimal serializer for MP home summary"""
+    class Meta:
+        model = MP
+        fields = ['id', 'name', 'party', 'constituency']
+
+
+class HomeSummaryBillSerializer(serializers.ModelSerializer):
+    """Minimal serializer for Bill home summary"""
+    class Meta:
+        model = Bill
+        fields = ['id', 'title']
+
+
+class HomeSummaryLoanSerializer(serializers.ModelSerializer):
+    """Minimal serializer for Loan home summary"""
+    sector_display = serializers.CharField(source='get_sector_display', read_only=True)
+    source_display = serializers.CharField(source='get_source_display', read_only=True)
+    
+    class Meta:
+        model = Loan
+        fields = ['id', 'label', 'sector_display', 'source_display']
+
+
+class HomeSummaryBudgetSerializer(serializers.ModelSerializer):
+    """Minimal serializer for Budget home summary"""
+    class Meta:
+        model = Budget
+        fields = ['id', 'name', 'financial_year', 'file']
+
+
+class HomeSummaryHansardSerializer(serializers.ModelSerializer):
+    """Minimal serializer for Hansard home summary"""
+    class Meta:
+        model = Hansard
+        fields = ['id', 'name', 'date', 'file']
+
+
+class HomeSummaryOrderPaperSerializer(serializers.ModelSerializer):
+    """Minimal serializer for OrderPaper home summary"""
+    class Meta:
+        model = OrderPaper
+        fields = ['id', 'name', 'file']

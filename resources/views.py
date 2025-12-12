@@ -1,8 +1,18 @@
 from rest_framework import viewsets, filters
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from django.core.cache import cache
 from .models import Explainers, Report, PartnerPublication, Statement
-from .serializers import ExplainersSerializer, ReportSerializer, PartnerPublicationSerializer, StatementSerializer
+from .serializers import (
+    ExplainersSerializer, ReportSerializer, PartnerPublicationSerializer, StatementSerializer,
+    HomeSummaryExplainerSerializer, HomeSummaryReportSerializer,
+    HomeSummaryPartnerPublicationSerializer, HomeSummaryStatementSerializer
+)
 
 
 class ResourcePagination(PageNumberPagination):
@@ -69,3 +79,41 @@ class StatementViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'description']
     ordering_fields = ['created_at', 'name']
     ordering = ['-created_at']
+
+
+# Home page resources summary endpoint - optimized and cached
+class HomeResourcesSummaryView(APIView):
+    """
+    Optimized endpoint for home page resources summary.
+    Returns latest 5 items from each resource type in a single response.
+    Cached for 10 minutes to improve performance.
+    """
+    permission_classes = [AllowAny]
+
+    @method_decorator(cache_page(600))  # Cache for 10 minutes
+    def get(self, request):
+        cache_key = 'home_resources_summary'
+        cached_data = cache.get(cache_key)
+        
+        if cached_data is not None:
+            return Response(cached_data)
+        
+        # Fetch latest 5 items from each resource type with optimized queries
+        # Using only() to fetch only needed fields
+        explainers = Explainers.objects.only('id', 'name', 'file').order_by('-created_at')[:5]
+        reports = Report.objects.only('id', 'name', 'file').order_by('-created_at')[:5]
+        partner_publications = PartnerPublication.objects.only('id', 'name', 'file').order_by('-created_at')[:5]
+        statements = Statement.objects.only('id', 'name', 'file').order_by('-created_at')[:5]
+        
+        # Serialize data
+        data = {
+            'explainers': HomeSummaryExplainerSerializer(explainers, many=True).data,
+            'reports': HomeSummaryReportSerializer(reports, many=True).data,
+            'partner_publications': HomeSummaryPartnerPublicationSerializer(partner_publications, many=True).data,
+            'statements': HomeSummaryStatementSerializer(statements, many=True).data,
+        }
+        
+        # Cache the response
+        cache.set(cache_key, data, 600)  # Cache for 10 minutes
+        
+        return Response(data)

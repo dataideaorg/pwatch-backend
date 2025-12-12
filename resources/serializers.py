@@ -64,3 +64,32 @@ class StatementSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
         read_only_fields = ['created_at', 'updated_at']
+
+
+# Lightweight serializers for home page summary
+class HomeSummaryExplainerSerializer(serializers.ModelSerializer):
+    """Minimal serializer for Explainer home summary"""
+    class Meta:
+        model = Explainers
+        fields = ['id', 'name', 'file']
+
+
+class HomeSummaryReportSerializer(serializers.ModelSerializer):
+    """Minimal serializer for Report home summary"""
+    class Meta:
+        model = Report
+        fields = ['id', 'name', 'file']
+
+
+class HomeSummaryPartnerPublicationSerializer(serializers.ModelSerializer):
+    """Minimal serializer for PartnerPublication home summary"""
+    class Meta:
+        model = PartnerPublication
+        fields = ['id', 'name', 'file']
+
+
+class HomeSummaryStatementSerializer(serializers.ModelSerializer):
+    """Minimal serializer for Statement home summary"""
+    class Meta:
+        model = Statement
+        fields = ['id', 'name', 'file']

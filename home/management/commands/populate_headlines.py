@@ -66,3 +66,4 @@ class Command(BaseCommand):
             self.style.SUCCESS(f'\nSuccessfully processed {len(headlines_data)} headlines. Created {created_count} new headlines.')
         )
 
+

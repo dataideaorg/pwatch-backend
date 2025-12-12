@@ -43,3 +43,12 @@ class NewsDetailSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
         read_only_fields = ['slug', 'created_at', 'updated_at']
+
+
+class HomeNewsSummarySerializer(serializers.ModelSerializer):
+    """Minimal serializer for home page news summary"""
+    category_display = serializers.CharField(read_only=True)
+    
+    class Meta:
+        model = News
+        fields = ['id', 'title', 'slug', 'author', 'category', 'category_display', 'excerpt', 'image', 'published_date']

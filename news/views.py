@@ -1,8 +1,14 @@
 from rest_framework import viewsets, filters
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from django.core.cache import cache
 from .models import News
-from .serializers import NewsListSerializer, NewsDetailSerializer
+from .serializers import NewsListSerializer, NewsDetailSerializer, HomeNewsSummarySerializer
 
 
 class NewsPagination(PageNumberPagination):
@@ -48,3 +54,39 @@ class NewsViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(status='published')
 
         return queryset
+
+
+# Home page news summary endpoint - optimized and cached
+class HomeNewsSummaryView(APIView):
+    """
+    Optimized endpoint for home page news summary.
+    Returns latest 3 published news articles in a single response.
+    Cached for 10 minutes to improve performance.
+    """
+    permission_classes = [AllowAny]
+
+    @method_decorator(cache_page(600))  # Cache for 10 minutes
+    def get(self, request):
+        cache_key = 'home_news_summary'
+        cached_data = cache.get(cache_key)
+        
+        if cached_data is not None:
+            return Response(cached_data)
+        
+        # Fetch latest 3 published news articles with optimized query
+        # Using only() to fetch only needed fields
+        news_articles = News.objects.filter(
+            status='published'
+        ).only(
+            'id', 'title', 'slug', 'author', 'category', 'excerpt', 'image', 'published_date'
+        ).order_by('-published_date', '-created_at')[:3]
+        
+        # Serialize data
+        data = {
+            'results': HomeNewsSummarySerializer(news_articles, many=True).data
+        }
+        
+        # Cache the response
+        cache.set(cache_key, data, 600)  # Cache for 10 minutes
+        
+        return Response(data)

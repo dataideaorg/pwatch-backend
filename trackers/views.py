@@ -2,10 +2,21 @@ from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Count, Q
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from django.core.cache import cache
 from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget, OrderPaper, Committee, CommitteeDocument
-from .serializers import BillSerializer, BillListSerializer, BillReadingSerializer, MPListSerializer, MPDetailSerializer, DebtDataSerializer, LoanSerializer, HansardSerializer, BudgetSerializer, OrderPaperSerializer, CommitteeListSerializer, CommitteeDetailSerializer
+from .serializers import (
+    BillSerializer, BillListSerializer, BillReadingSerializer, MPListSerializer, MPDetailSerializer,
+    DebtDataSerializer, LoanSerializer, HansardSerializer, BudgetSerializer, OrderPaperSerializer,
+    CommitteeListSerializer, CommitteeDetailSerializer,
+    HomeSummaryMPSerializer, HomeSummaryBillSerializer, HomeSummaryLoanSerializer,
+    HomeSummaryBudgetSerializer, HomeSummaryHansardSerializer, HomeSummaryOrderPaperSerializer
+)
 
 
 class BillViewSet(viewsets.ModelViewSet):
@@ -329,3 +340,45 @@ class CommitteeViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return CommitteeListSerializer
         return CommitteeDetailSerializer
+
+
+# Home page summary endpoint - optimized and cached
+class HomeSummaryView(APIView):
+    """
+    Optimized endpoint for home page trackers summary.
+    Returns latest 5 items from each tracker in a single response.
+    Cached for 10 minutes to improve performance.
+    """
+    permission_classes = [AllowAny]
+
+    @method_decorator(cache_page(600))  # Cache for 10 minutes
+    def get(self, request):
+        cache_key = 'home_trackers_summary'
+        cached_data = cache.get(cache_key)
+        
+        if cached_data is not None:
+            return Response(cached_data)
+        
+        # Fetch latest 5 items from each tracker with optimized queries
+        # Using only() to fetch only needed fields
+        mps = MP.objects.only('id', 'name', 'party', 'constituency').order_by('-created_at')[:5]
+        bills = Bill.objects.only('id', 'title').order_by('-created_at')[:5]
+        loans = Loan.objects.only('id', 'label', 'sector', 'source').order_by('-created_at')[:5]
+        budgets = Budget.objects.only('id', 'name', 'financial_year', 'file').order_by('-created_at')[:5]
+        hansards = Hansard.objects.only('id', 'name', 'date', 'file').order_by('-created_at')[:5]
+        order_papers = OrderPaper.objects.only('id', 'name', 'file').order_by('-created_at')[:5]
+        
+        # Serialize data
+        data = {
+            'mps': HomeSummaryMPSerializer(mps, many=True).data,
+            'bills': HomeSummaryBillSerializer(bills, many=True).data,
+            'loans': HomeSummaryLoanSerializer(loans, many=True).data,
+            'budgets': HomeSummaryBudgetSerializer(budgets, many=True).data,
+            'hansards': HomeSummaryHansardSerializer(hansards, many=True).data,
+            'order_papers': HomeSummaryOrderPaperSerializer(order_papers, many=True).data,
+        }
+        
+        # Cache the response
+        cache.set(cache_key, data, 600)  # Cache for 10 minutes
+        
+        return Response(data)
