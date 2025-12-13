@@ -1,4 +1,5 @@
 from django.db import models
+from ckeditor.fields import RichTextField
 
 
 class Bill(models.Model):
@@ -88,7 +89,7 @@ class MP(models.Model):
 
     # Additional Information
     photo = models.ImageField(upload_to='mps/', blank=True, null=True)
-    bio = models.TextField(blank=True, null=True)
+    bio = RichTextField(blank=True, null=True)
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
