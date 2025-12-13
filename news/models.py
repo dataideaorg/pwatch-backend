@@ -3,6 +3,10 @@ from django.utils import timezone
 from django.utils.text import slugify
 
 
+def default_published_date():
+    return timezone.now().date()
+
+
 class News(models.Model):
     STATUS_CHOICES = [
         ('draft', 'Draft'),
@@ -25,7 +29,7 @@ class News(models.Model):
     content = models.TextField()
     image = models.ImageField(upload_to='news/', blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
-    published_date = models.DateField(default=timezone.now().date)
+    published_date = models.DateField(default=default_published_date)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
