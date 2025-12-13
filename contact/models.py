@@ -49,7 +49,7 @@ class DonationSubmission(models.Model):
 
     name = models.CharField(max_length=200)
     email = models.EmailField()
-    country = models.CharField(max_length=100, default='United States')
+    country = models.CharField(max_length=100, default='Uganda')
     address = models.TextField(blank=True)
     donation_method = models.CharField(
         max_length=50,
