@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
+from ckeditor.fields import RichTextField
 
 
 def default_published_date():
@@ -26,7 +27,7 @@ class News(models.Model):
     author = models.CharField(max_length=200, db_index=True)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='news_updates')
     excerpt = models.TextField(max_length=500, blank=True)
-    content = models.TextField()
+    content = RichTextField()
     image = models.ImageField(upload_to='news/', blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     published_date = models.DateField(default=default_published_date)

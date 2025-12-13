@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'ckeditor',
     'accounts',
     'home',
     'blog',
@@ -200,4 +201,31 @@ CACHES = {
             'MAX_ENTRIES': 1000
         }
     }
+}
+
+# CKEditor Configuration
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'Standard',
+        'height': 400,
+        'width': '100%',
+        'toolbar_Standard': [
+            ['Styles', 'Format'],
+            ['Bold', 'Italic', 'Underline', 'Strike', '-', 'Subscript', 'Superscript'],
+            ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote'],
+            ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
+            ['Link', 'Unlink'],
+            ['RemoveFormat', 'Source'],
+        ],
+        'stylesSet': [
+            {'name': 'Heading 1', 'element': 'h1'},
+            {'name': 'Heading 2', 'element': 'h2'},
+            {'name': 'Heading 3', 'element': 'h3'},
+            {'name': 'Heading 4', 'element': 'h4'},
+            {'name': 'Paragraph', 'element': 'p'},
+        ],
+        'format_tags': 'p;h1;h2;h3;h4;pre',
+        'removePlugins': 'elementspath',
+        'resize_enabled': True,
+    },
 }

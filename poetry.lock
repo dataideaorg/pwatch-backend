@@ -37,6 +37,22 @@ argon2 = ["argon2-cffi (>=23.1.0)"]
 bcrypt = ["bcrypt (>=4.1.1)"]
 
 [[package]]
+name = "django-ckeditor"
+version = "6.7.3"
+description = "Django admin CKEditor integration."
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "django_ckeditor-6.7.3-py3-none-any.whl", hash = "sha256:09771c9b8fb33b84bd2767dfc891a24b7fbdb0120910a7ec65b763a4ae6807bb"},
+    {file = "django_ckeditor-6.7.3.tar.gz", hash = "sha256:889fd80ee7d368e3c5b828c8dabf8907d56bcad6bf5881f3898416df4f2adfe7"},
+]
+
+[package.dependencies]
+Django = ">=3.2"
+django-js-asset = ">=2.0"
+
+[[package]]
 name = "django-cors-headers"
 version = "4.9.0"
 description = "django-cors-headers is a Django application for handling the server headers required for Cross-Origin Resource Sharing (CORS)."
@@ -66,6 +82,24 @@ files = [
 
 [package.dependencies]
 Django = ">=4.2"
+
+[[package]]
+name = "django-js-asset"
+version = "3.1.2"
+description = "script tag with additional attributes for django.forms.Media"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "django_js_asset-3.1.2-py3-none-any.whl", hash = "sha256:b5ffe376aebbd73b7af886d675ac9f43ca63b39540190fa8409c9f8e79145f68"},
+    {file = "django_js_asset-3.1.2.tar.gz", hash = "sha256:1fc7584199ed1941ed7c8e7b87ca5524bb0f2ba941561d2a104e88ee9f07bedd"},
+]
+
+[package.dependencies]
+django = ">=4.2"
+
+[package.extras]
+tests = ["coverage"]
 
 [[package]]
 name = "djangorestframework"
@@ -377,4 +411,4 @@ brotli = ["brotli"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12"
-content-hash = "9657808fc29b1a152f3a39f2cf6d8bd2cbde7389f00fd3090af9d2318995bbe3"
+content-hash = "9f423e73acc2d17dadea97f01a07ed0223e07ba4d478e11740a894c443ac952b"
