@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.utils.text import slugify
 
 
@@ -24,7 +25,7 @@ class News(models.Model):
     content = models.TextField()
     image = models.ImageField(upload_to='news/', blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
-    published_date = models.DateField(auto_now_add=True)
+    published_date = models.DateField(default=timezone.now().date)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
