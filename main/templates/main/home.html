@@ -108,7 +108,9 @@
     <div class="container">
         <div class="logo">
             {% load static %}
-            <img src="{% static 'main/images/pwatch-logo.png' %}" alt="Parliament Watch Uganda Logo">
+            <img src="{% static 'main/images/pwatch-logo.png' %}" 
+                 onerror="this.onerror=null; this.src='https://parliamentwatch.ug/images/PWATCH%20LOGO.png';" 
+                 alt="Parliament Watch Uganda Logo">
         </div>
         <h1>Parliament Watch</h1>
         <p>
