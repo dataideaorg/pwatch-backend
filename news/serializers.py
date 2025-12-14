@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from main.utils import get_full_media_url
 from .models import News
 
 
@@ -6,6 +7,7 @@ class NewsListSerializer(serializers.ModelSerializer):
     """Simplified serializer for news list view"""
     category_display = serializers.CharField(read_only=True)
     author = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = News
@@ -25,11 +27,17 @@ class NewsListSerializer(serializers.ModelSerializer):
             return obj.author.get_full_name() or obj.author.username
         return 'Unknown'
 
+    def get_image(self, obj):
+        if obj.image:
+            return get_full_media_url(obj.image.url)
+        return None
+
 
 class NewsDetailSerializer(serializers.ModelSerializer):
     """Full serializer for news detail view"""
     category_display = serializers.CharField(read_only=True)
     author = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = News
@@ -54,11 +62,17 @@ class NewsDetailSerializer(serializers.ModelSerializer):
             return obj.author.get_full_name() or obj.author.username
         return 'Unknown'
 
+    def get_image(self, obj):
+        if obj.image:
+            return get_full_media_url(obj.image.url)
+        return None
+
 
 class HomeNewsSummarySerializer(serializers.ModelSerializer):
     """Minimal serializer for home page news summary"""
     category_display = serializers.CharField(read_only=True)
     author = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
     
     class Meta:
         model = News
@@ -68,3 +82,8 @@ class HomeNewsSummarySerializer(serializers.ModelSerializer):
         if obj.author:
             return obj.author.get_full_name() or obj.author.username
         return 'Unknown'
+
+    def get_image(self, obj):
+        if obj.image:
+            return get_full_media_url(obj.image.url)
+        return None

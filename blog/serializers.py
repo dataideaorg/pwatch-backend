@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from main.utils import get_full_media_url
 from .models import Blog
 
 
@@ -6,6 +7,7 @@ class BlogListSerializer(serializers.ModelSerializer):
     """Simplified serializer for blog list view"""
     category_display = serializers.CharField(read_only=True)
     author = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Blog
@@ -25,11 +27,17 @@ class BlogListSerializer(serializers.ModelSerializer):
             return obj.author.get_full_name() or obj.author.username
         return 'Unknown'
 
+    def get_image(self, obj):
+        if obj.image:
+            return get_full_media_url(obj.image.url)
+        return None
+
 
 class BlogDetailSerializer(serializers.ModelSerializer):
     """Full serializer for blog detail view"""
     category_display = serializers.CharField(read_only=True)
     author = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Blog
@@ -54,11 +62,17 @@ class BlogDetailSerializer(serializers.ModelSerializer):
             return obj.author.get_full_name() or obj.author.username
         return 'Unknown'
 
+    def get_image(self, obj):
+        if obj.image:
+            return get_full_media_url(obj.image.url)
+        return None
+
 
 class HomeBlogSummarySerializer(serializers.ModelSerializer):
     """Minimal serializer for home page blog summary"""
     category_display = serializers.CharField(read_only=True)
     author = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
     
     class Meta:
         model = Blog
@@ -68,4 +82,9 @@ class HomeBlogSummarySerializer(serializers.ModelSerializer):
         if obj.author:
             return obj.author.get_full_name() or obj.author.username
         return 'Unknown'
+
+    def get_image(self, obj):
+        if obj.image:
+            return get_full_media_url(obj.image.url)
+        return None
 

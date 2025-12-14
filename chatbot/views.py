@@ -46,11 +46,20 @@ def get_documents_from_media():
                 # Create a readable name from filename
                 name = file.replace('.pdf', '').replace('_', ' ').replace('-', ' ').title()
                 
-                # Build URL
-                if settings.DEBUG:
-                    url = f"{settings.MEDIA_URL}{relative_path}"
+                # Build URL - use full backend URL from settings
+                full_media_url = getattr(settings, 'FULL_MEDIA_URL', None)
+                if full_media_url:
+                    # Remove trailing slash if present, then add relative path
+                    full_media_url = full_media_url.rstrip('/')
+                    url = f"{full_media_url}/{relative_path}"
                 else:
-                    url = f"/media/{relative_path}"
+                    # Fallback: construct from MEDIA_URL
+                    if settings.DEBUG:
+                        url = f"http://localhost:8000{settings.MEDIA_URL}{relative_path}"
+                    else:
+                        # In production, try to get from environment or use default
+                        backend_domain = config('BACKEND_DOMAIN', default='https://pwatch-backend-production.up.railway.app')
+                        url = f"{backend_domain}{settings.MEDIA_URL}{relative_path}"
                 
                 documents.append({
                     'name': name,
@@ -192,8 +201,16 @@ Please provide a clear, concise answer to the user's question based on the docum
             
             answer = answer_response.content[0].text.strip()
             
-            # Use document URL from model
-            document_url = selected_doc.get('url', f"/media/{selected_doc['relative_path']}")
+            # Use document URL - should already be full backend URL from get_documents_from_media()
+            document_url = selected_doc.get('url', '')
+            if not document_url:
+                # Fallback: construct full backend URL
+                full_media_url = getattr(settings, 'FULL_MEDIA_URL', None)
+                if full_media_url:
+                    full_media_url = full_media_url.rstrip('/')
+                    document_url = f"{full_media_url}/{selected_doc['relative_path']}"
+                else:
+                    document_url = f"/media/{selected_doc['relative_path']}"
             
             response_data = {
                 'answer': answer,

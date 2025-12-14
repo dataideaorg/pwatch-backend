@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from main.utils import get_full_media_url
 from .models import Objective, TeamMember
 
 
@@ -19,6 +20,8 @@ class ObjectiveSerializer(serializers.ModelSerializer):
 
 
 class TeamMemberSerializer(serializers.ModelSerializer):
+    photo = serializers.SerializerMethodField()
+
     class Meta:
         model = TeamMember
         fields = [
@@ -38,5 +41,10 @@ class TeamMemberSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
         read_only_fields = ['created_at', 'updated_at']
+
+    def get_photo(self, obj):
+        if obj.photo:
+            return get_full_media_url(obj.photo.url)
+        return None
 
 

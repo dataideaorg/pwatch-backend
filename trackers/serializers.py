@@ -1,9 +1,14 @@
 from rest_framework import serializers
+from main.utils import get_full_media_url
 from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget, OrderPaper, Committee, CommitteeDocument
 
 
 class BillReadingSerializer(serializers.ModelSerializer):
     stage_display = serializers.CharField(source='get_stage_display', read_only=True)
+    document = serializers.SerializerMethodField()
+    committee_report = serializers.SerializerMethodField()
+    analysis = serializers.SerializerMethodField()
+    mp_photo = serializers.SerializerMethodField()
 
     class Meta:
         model = BillReading
@@ -20,6 +25,26 @@ class BillReadingSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
+
+    def get_document(self, obj):
+        if obj.document:
+            return get_full_media_url(obj.document.url)
+        return None
+
+    def get_committee_report(self, obj):
+        if obj.committee_report:
+            return get_full_media_url(obj.committee_report.url)
+        return None
+
+    def get_analysis(self, obj):
+        if obj.analysis:
+            return get_full_media_url(obj.analysis.url)
+        return None
+
+    def get_mp_photo(self, obj):
+        if obj.mp_photo:
+            return get_full_media_url(obj.mp_photo.url)
+        return None
 
 
 class BillSerializer(serializers.ModelSerializer):
@@ -69,6 +94,7 @@ class BillListSerializer(serializers.ModelSerializer):
 
 class MPListSerializer(serializers.ModelSerializer):
     """Simplified serializer for MP listing"""
+    photo = serializers.SerializerMethodField()
 
     class Meta:
         model = MP
@@ -86,9 +112,15 @@ class MPListSerializer(serializers.ModelSerializer):
             'email',
         ]
 
+    def get_photo(self, obj):
+        if obj.photo:
+            return get_full_media_url(obj.photo.url)
+        return None
+
 
 class MPDetailSerializer(serializers.ModelSerializer):
     """Full serializer for MP detail view"""
+    photo = serializers.SerializerMethodField()
 
     class Meta:
         model = MP
@@ -109,6 +141,11 @@ class MPDetailSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
         read_only_fields = ['created_at', 'updated_at']
+
+    def get_photo(self, obj):
+        if obj.photo:
+            return get_full_media_url(obj.photo.url)
+        return None
 
 
 class DebtDataSerializer(serializers.ModelSerializer):
@@ -161,6 +198,7 @@ class LoanSerializer(serializers.ModelSerializer):
 
 class HansardSerializer(serializers.ModelSerializer):
     """Serializer for Hansards"""
+    file = serializers.SerializerMethodField()
 
     class Meta:
         model = Hansard
@@ -174,9 +212,15 @@ class HansardSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['created_at', 'updated_at']
 
+    def get_file(self, obj):
+        if obj.file:
+            return get_full_media_url(obj.file.url)
+        return None
+
 
 class BudgetSerializer(serializers.ModelSerializer):
     """Serializer for Budgets"""
+    file = serializers.SerializerMethodField()
 
     class Meta:
         model = Budget
@@ -191,9 +235,15 @@ class BudgetSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['created_at', 'updated_at']
 
+    def get_file(self, obj):
+        if obj.file:
+            return get_full_media_url(obj.file.url)
+        return None
+
 
 class OrderPaperSerializer(serializers.ModelSerializer):
     """Serializer for Order Papers"""
+    file = serializers.SerializerMethodField()
 
     class Meta:
         model = OrderPaper
@@ -207,9 +257,15 @@ class OrderPaperSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['created_at', 'updated_at']
 
+    def get_file(self, obj):
+        if obj.file:
+            return get_full_media_url(obj.file.url)
+        return None
+
 
 class CommitteeDocumentSerializer(serializers.ModelSerializer):
     """Serializer for Committee Documents"""
+    file = serializers.SerializerMethodField()
 
     class Meta:
         model = CommitteeDocument
@@ -223,6 +279,11 @@ class CommitteeDocumentSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
         read_only_fields = ['created_at', 'updated_at']
+
+    def get_file(self, obj):
+        if obj.file:
+            return get_full_media_url(obj.file.url)
+        return None
 
 
 class CommitteeListSerializer(serializers.ModelSerializer):
@@ -298,20 +359,41 @@ class HomeSummaryLoanSerializer(serializers.ModelSerializer):
 
 class HomeSummaryBudgetSerializer(serializers.ModelSerializer):
     """Minimal serializer for Budget home summary"""
+    file = serializers.SerializerMethodField()
+    
     class Meta:
         model = Budget
         fields = ['id', 'name', 'financial_year', 'file']
 
+    def get_file(self, obj):
+        if obj.file:
+            return get_full_media_url(obj.file.url)
+        return None
+
 
 class HomeSummaryHansardSerializer(serializers.ModelSerializer):
     """Minimal serializer for Hansard home summary"""
+    file = serializers.SerializerMethodField()
+    
     class Meta:
         model = Hansard
         fields = ['id', 'name', 'date', 'file']
 
+    def get_file(self, obj):
+        if obj.file:
+            return get_full_media_url(obj.file.url)
+        return None
+
 
 class HomeSummaryOrderPaperSerializer(serializers.ModelSerializer):
     """Minimal serializer for OrderPaper home summary"""
+    file = serializers.SerializerMethodField()
+    
     class Meta:
         model = OrderPaper
         fields = ['id', 'name', 'file']
+
+    def get_file(self, obj):
+        if obj.file:
+            return get_full_media_url(obj.file.url)
+        return None

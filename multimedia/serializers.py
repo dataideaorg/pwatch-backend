@@ -1,9 +1,11 @@
 from rest_framework import serializers
+from main.utils import get_full_media_url
 from .models import XSpace, Podcast, Gallery, Poll, PollOption, PollVote
 
 
 class XSpaceSerializer(serializers.ModelSerializer):
     status_display = serializers.CharField(source='get_status_display', read_only=True)
+    thumbnail = serializers.SerializerMethodField()
 
     class Meta:
         model = XSpace
@@ -25,8 +27,15 @@ class XSpaceSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
 
+    def get_thumbnail(self, obj):
+        if obj.thumbnail:
+            return get_full_media_url(obj.thumbnail.url)
+        return None
+
 
 class PodcastSerializer(serializers.ModelSerializer):
+    thumbnail = serializers.SerializerMethodField()
+
     class Meta:
         model = Podcast
         fields = [
@@ -46,8 +55,15 @@ class PodcastSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
 
+    def get_thumbnail(self, obj):
+        if obj.thumbnail:
+            return get_full_media_url(obj.thumbnail.url)
+        return None
+
 
 class GallerySerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = Gallery
         fields = [
@@ -63,6 +79,11 @@ class GallerySerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
+
+    def get_image(self, obj):
+        if obj.image:
+            return get_full_media_url(obj.image.url)
+        return None
 
 
 class PollOptionSerializer(serializers.ModelSerializer):

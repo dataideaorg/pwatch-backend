@@ -30,7 +30,8 @@ class Document(models.Model):
     def file_url(self):
         """Get the URL to access the file"""
         if self.file:
-            return self.file.url
+            from main.utils import get_full_media_url
+            return get_full_media_url(self.file.url)
         return None
 
     @property
