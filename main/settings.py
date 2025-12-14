@@ -26,7 +26,7 @@ RAILWAY_ENVIRONMENT_NAME = config('RAILWAY_ENVIRONMENT_NAME', default='')
 SECRET_KEY = 'django-insecure-594=3^7*p@^mk(lqm#^7vj10%twafztz9usu(_))4zne+#fgkz'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True)
+DEBUG = True if config('DEBUG', default=True) == 'True' else False
 
 ALLOWED_HOSTS = ["*"]
 
