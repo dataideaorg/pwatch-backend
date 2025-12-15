@@ -156,13 +156,13 @@ class ChatbotView(APIView):
             
             relevance_prompt = f"""You are a document search assistant. Given a user question and a list of documents, identify which document is most relevant.
 
-User Question: {query}
+            User Question: {query}
 
-Available Documents:
-{doc_summaries}
+            Available Documents:
+            {doc_summaries}
 
-Respond with ONLY the document number (1, 2, 3, etc.) that is most relevant to the question. If no document is relevant, respond with "0"."""
-            
+            Respond with ONLY the document number (1, 2, 3, etc.) that is most relevant to the question. If no document is relevant, respond with "0"."""
+                        
             relevance_response = client.messages.create(
                 model="claude-3-haiku-20240307",  # Cheapest Claude model
                 max_tokens=10,
@@ -184,15 +184,15 @@ Respond with ONLY the document number (1, 2, 3, etc.) that is most relevant to t
             # Generate answer using the selected document
             answer_prompt = f"""You are a helpful assistant answering questions about parliamentary proceedings in Uganda based on the provided document.
 
-User Question: {query}
+            User Question: {query}
 
-Document Name: {selected_doc['name']}
+            Document Name: {selected_doc['name']}
 
-Document Content:
-{selected_doc['full_text'][:50000]}  # Limit to 50k chars for Claude
+            Document Content:
+            {selected_doc['full_text'][:50000]}  # Limit to 50k chars for Claude
 
-Please provide a clear, concise answer to the user's question based on the document content. If the answer is not in the document, say so clearly. Keep your answer under 300 words."""
-            
+            Please provide a clear, concise answer to the user's question based on the document content. Be straight to point, you don't have to say 'According to the document etc', If the answer is not in the document, say so clearly. Keep your answer under 300 words."""
+                        
             answer_response = client.messages.create(
                 model="claude-3-haiku-20240307",  # Cheapest Claude model
                 max_tokens=500,
