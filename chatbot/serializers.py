@@ -13,6 +13,7 @@ class DocumentSerializer(serializers.ModelSerializer):
 
 class ChatbotQuerySerializer(serializers.Serializer):
     query = serializers.CharField(required=True, help_text="User's question")
+    session_id = serializers.CharField(required=False, allow_blank=True, help_text="Session ID for conversation continuity")
 
 
 class ChatbotResponseSerializer(serializers.Serializer):
@@ -20,4 +21,5 @@ class ChatbotResponseSerializer(serializers.Serializer):
     document_name = serializers.CharField(help_text="Name of the relevant document")
     document_url = serializers.CharField(help_text="URL to access the document")
     confidence = serializers.FloatField(help_text="Confidence score (0-1)", required=False)
+    session_id = serializers.CharField(help_text="Session ID for conversation continuity", required=False)
 

@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from decouple import config
 from .serializers import ChatbotQuerySerializer, ChatbotResponseSerializer
-from .models import Document
+from .models import Document, ChatConversation, ChatMessage
 
 try:
     import anthropic
@@ -93,6 +93,78 @@ class ChatbotView(APIView):
     Uses Claude API for intelligent responses.
     """
     
+    def get_client_ip(self, request):
+        """Get client IP address from request"""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+    
+    def get_or_create_conversation(self, request):
+        """Get or create a conversation for the current session"""
+        # Get session ID from request data or generate one
+        session_id = request.data.get('session_id') or request.session.session_key
+        if not session_id:
+            # Generate a session ID if none exists
+            import uuid
+            session_id = str(uuid.uuid4())
+        
+        # Get client metadata
+        ip_address = self.get_client_ip(request)
+        user_agent = request.META.get('HTTP_USER_AGENT', '')
+        
+        # Get or create conversation
+        conversation, created = ChatConversation.objects.get_or_create(
+            session_id=session_id,
+            defaults={
+                'ip_address': ip_address,
+                'user_agent': user_agent
+            }
+        )
+        
+        # Update metadata if conversation already exists
+        if not created:
+            if not conversation.ip_address:
+                conversation.ip_address = ip_address
+            if not conversation.user_agent:
+                conversation.user_agent = user_agent
+            conversation.save()
+        
+        return conversation, session_id
+    
+    def get_conversation_history(self, conversation, limit=5):
+        """Get the last N message pairs (user + assistant) from conversation history"""
+        # Get last messages ordered by creation time
+        messages = conversation.messages.all().order_by('-created_at')[:limit * 2]
+        
+        # Reverse to get chronological order
+        messages = list(reversed(messages))
+        
+        # Group into pairs (user, assistant)
+        history = []
+        i = 0
+        while i < len(messages):
+            if messages[i].role == 'user':
+                user_msg = messages[i]
+                assistant_msg = None
+                if i + 1 < len(messages) and messages[i + 1].role == 'assistant':
+                    assistant_msg = messages[i + 1]
+                    i += 2
+                else:
+                    i += 1
+                
+                if assistant_msg:
+                    history.append({
+                        'user': user_msg.content,
+                        'assistant': assistant_msg.content
+                    })
+            else:
+                i += 1
+        
+        return history
+    
     def post(self, request):
         if not HAS_DEPENDENCIES:
             return Response(
@@ -105,6 +177,19 @@ class ChatbotView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         query = serializer.validated_data['query']
+        
+        # Get or create conversation
+        conversation, session_id = self.get_or_create_conversation(request)
+        
+        # Save user message
+        user_message = ChatMessage.objects.create(
+            conversation=conversation,
+            role='user',
+            content=query
+        )
+        
+        # Get conversation history (last 5 message pairs)
+        history = self.get_conversation_history(conversation, limit=5)
         
         # Get Claude API key from environment
         claude_api_key = config('CLAUDE_API_KEY', default=None)
@@ -138,6 +223,7 @@ class ChatbotView(APIView):
                         'name': doc['name'],
                         'path': doc['path'],
                         'relative_path': doc['relative_path'],
+                        'url': doc.get('url', ''),  # Include URL for later use
                         'preview': preview,
                         'full_text': text
                     })
@@ -181,26 +267,47 @@ class ChatbotView(APIView):
             
             selected_doc = document_contents[doc_index]
             
+            # Build conversation history context
+            history_context = ""
+            if history:
+                history_context = "\n\nPrevious conversation context:\n"
+                for i, pair in enumerate(history, 1):
+                    history_context += f"\nPrevious exchange {i}:\n"
+                    history_context += f"User: {pair['user']}\n"
+                    history_context += f"Assistant: {pair['assistant']}\n"
+                history_context += "\nUse this context to provide more relevant and coherent responses.\n"
+            
             # Generate answer using the selected document
             answer_prompt = f"""You are a helpful assistant for Parliament Watch Uganda. You have access to a collection of parliamentary documents and can search through them to answer questions.
+{history_context}
+A user has asked: {query}
 
-            A user has asked: {query}
+I have searched through the available parliamentary documents and found the following document that is most relevant to this question:
 
-            I have searched through the available parliamentary documents and found the following document that is most relevant to this question:
+Document: {selected_doc['name']}
 
-            Document: {selected_doc['name']}
+Document Content:
+{selected_doc['full_text'][:50000]}
 
-            Document Content:
-            {selected_doc['full_text'][:50000]}
+Based on the information in this document{(' and the previous conversation context' if history_context else '')}, provide a clear and direct answer to the user's question. Answer naturally as if you are providing information from your knowledge base. Do not mention that you are reading from a document or that the user provided anything. Simply answer the question directly.
 
-            Based on the information in this document, provide a clear and direct answer to the user's question. Answer naturally as if you are providing information from your knowledge base. Do not mention that you are reading from a document or that the user provided anything. Simply answer the question directly.
+If the information needed to answer the question is not found in this document, clearly state that you could not find the specific information requested. Keep your answer concise and under 300 words."""
 
-            If the information needed to answer the question is not found in this document, clearly state that you could not find the specific information requested. Keep your answer concise and under 300 words."""
-
+            # Build messages array with conversation history for Claude
+            messages = []
+            
+            # Add conversation history as alternating user/assistant messages
+            for pair in history:
+                messages.append({"role": "user", "content": pair['user']})
+                messages.append({"role": "assistant", "content": pair['assistant']})
+            
+            # Add current query
+            messages.append({"role": "user", "content": answer_prompt})
+            
             answer_response = client.messages.create(
                 model="claude-3-haiku-20240307",  # Cheapest Claude model
                 max_tokens=500,
-                messages=[{"role": "user", "content": answer_prompt}]
+                messages=messages
             )
             
             answer = answer_response.content[0].text.strip()
@@ -216,11 +323,21 @@ class ChatbotView(APIView):
                 else:
                     document_url = f"/media/{selected_doc['relative_path']}"
             
+            # Save assistant message
+            assistant_message = ChatMessage.objects.create(
+                conversation=conversation,
+                role='assistant',
+                content=answer,
+                document_name=selected_doc['name'],
+                document_url=document_url
+            )
+            
             response_data = {
                 'answer': answer,
                 'document_name': selected_doc['name'],
                 'document_url': document_url,
-                'confidence': 0.8  # Simple confidence score
+                'confidence': 0.8,  # Simple confidence score
+                'session_id': session_id  # Return session_id for frontend to use
             }
             
             response_serializer = ChatbotResponseSerializer(data=response_data)
