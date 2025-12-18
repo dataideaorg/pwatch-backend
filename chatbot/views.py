@@ -350,14 +350,18 @@ Respond warmly and naturally to the appreciation. Acknowledge their thanks and o
                 for i, doc in enumerate(document_contents)
             ])
             
-            relevance_prompt = f"""You are a document search assistant. Given a user question and a list of documents, identify which document is most relevant.
+            relevance_prompt = f"""You are a document search assistant for Parliament Watch Uganda. You need to find documents related to the Ugandan Parliament, political parties, MPs, bills, or parliamentary proceedings.
 
-            User Question: {query}
+User Question: {query}
 
-            Available Documents:
-            {doc_summaries}
+Available Documents:
+{doc_summaries}
 
-            Respond with ONLY the document number (1, 2, 3, etc.) that is most relevant to the question. If no document is relevant, respond with "0"."""
+IMPORTANT: 
+- Only select documents that are clearly related to parliamentary matters, Ugandan politics, MPs, bills, or political parties.
+- If a document is clearly about unrelated topics (programming, general topics, etc.) and the question is about parliamentary matters, respond with "0".
+- If no document is relevant to the parliamentary question, respond with "0".
+- Otherwise, respond with ONLY the document number (1, 2, 3, etc.) that is most relevant."""
                         
             relevance_response = client.messages.create(
                 model="claude-3-haiku-20240307",  # Cheapest Claude model
@@ -368,36 +372,114 @@ Respond warmly and naturally to the appreciation. Acknowledge their thanks and o
             selected_doc_num = relevance_response.content[0].text.strip()
             
             # Parse document number
+            doc_index = -1
             try:
-                doc_index = int(re.search(r'\d+', selected_doc_num).group()) - 1
-                if doc_index < 0 or doc_index >= len(document_contents):
-                    doc_index = 0  # Default to first document
+                doc_num = int(re.search(r'\d+', selected_doc_num).group())
+                if doc_num == 0:
+                    # No relevant document found
+                    doc_index = -1
+                else:
+                    doc_index = doc_num - 1
+                    if doc_index < 0 or doc_index >= len(document_contents):
+                        doc_index = -1
             except:
-                doc_index = 0
+                doc_index = -1
+            
+            # If no relevant document found, respond directly without document
+            if doc_index == -1:
+                # Build conversation history context
+                history_context = ""
+                if history:
+                    history_context = "\n\nPrevious conversation context:\n"
+                    for i, pair in enumerate(history, 1):
+                        history_context += f"\nPrevious exchange {i}:\n"
+                        history_context += f"User: {pair['user']}\n"
+                        history_context += f"Assistant: {pair['assistant']}\n"
+                    history_context += "\nUse this context to provide more relevant and coherent responses.\n"
+                
+                no_doc_prompt = f"""You are a helpful assistant for Parliament Watch Uganda. You answer questions about the Ugandan Parliament, political parties, MPs, bills, and parliamentary proceedings.
+{history_context}
+User question: {query}
+
+I searched through the available parliamentary documents but could not find any documents relevant to this question.
+
+Respond directly and concisely (1-2 sentences): "I couldn't find information about [specific topic] in the available parliamentary documents."
+
+Do NOT:
+- Add greetings or pleasantries
+- Apologize excessively
+- Mention searching documents
+- Be verbose
+
+Just state simply that the information wasn't found."""
+                
+                # Build messages array with conversation history
+                messages = []
+                for pair in history:
+                    messages.append({"role": "user", "content": pair['user']})
+                    messages.append({"role": "assistant", "content": pair['assistant']})
+                
+                messages.append({"role": "user", "content": no_doc_prompt})
+                
+                answer_response = client.messages.create(
+                    model="claude-3-haiku-20240307",
+                    max_tokens=100,
+                    messages=messages
+                )
+                
+                answer = answer_response.content[0].text.strip()
+                
+                # Save assistant message
+                assistant_message = ChatMessage.objects.create(
+                    conversation=conversation,
+                    role='assistant',
+                    content=answer
+                )
+                
+                response_data = {
+                    'answer': answer,
+                    'document_name': '',
+                    'document_url': '',
+                    'confidence': 0.3,
+                    'session_id': session_id
+                }
+                
+                response_serializer = ChatbotResponseSerializer(data=response_data)
+                if response_serializer.is_valid():
+                    return Response(response_serializer.validated_data, status=status.HTTP_200_OK)
+                else:
+                    return Response(response_data, status=status.HTTP_200_OK)
             
             selected_doc = document_contents[doc_index]
             
             # Generate answer using the selected document with enhanced prompt
-            answer_prompt = f"""You are a helpful and friendly assistant for Parliament Watch Uganda. You have access to a collection of parliamentary documents and can search through them to answer questions.
+            answer_prompt = f"""You are a helpful assistant for Parliament Watch Uganda. You answer questions about the Ugandan Parliament, political parties, MPs, bills, and parliamentary proceedings.
 {history_context}
-A user has asked: {query}
+User question: {query}
 
-I have searched through the available parliamentary documents and found the following document that is most relevant to this question:
+I have searched through parliamentary documents and found this document:
 
 Document: {selected_doc['name']}
 
 Document Content:
 {selected_doc['full_text'][:100000]}
 
-Instructions for responding:
-- If the user's message is primarily a greeting (hello, hi, greetings, good morning/afternoon/evening, etc.), respond warmly, introduce yourself as the Parliament Watch Uganda chatbot, and offer to help with parliamentary questions. Be friendly and welcoming.
-- If the user's message is primarily an appreciation (thank you, thanks, appreciate, grateful, etc.), acknowledge it warmly and offer further assistance.
-- If the user combines a greeting or appreciation with a question, acknowledge the greeting/appreciation briefly and naturally, then answer the question based on the document content.
-- Answer naturally and conversationally as if you are providing information from your knowledge base.
-- Do not mention that you are reading from a document or that the user provided anything. Simply answer the question directly.
-- If the information needed to answer the question is not found in this document, clearly state that you could not find the specific information requested.
-- Keep your answer concise and under 300 words.
-- Always maintain a friendly, professional tone appropriate for a parliamentary information service."""
+CRITICAL INSTRUCTIONS:
+1. **Answer the question directly** - Do NOT start with greetings, introductions, or pleasantries. The user has already asked a question, so answer it immediately.
+
+2. **Check document relevance** - If the document content is clearly not related to the question (e.g., programming, unrelated topics), state simply: "I couldn't find information about [topic] in the available parliamentary documents."
+
+3. **If information is found** - Provide a clear, direct answer based on the document. Do not mention the document name or that you searched documents. Answer as if you know this information.
+
+4. **If information is NOT found** - Simply state: "I couldn't find information about [specific topic] in the available parliamentary documents." Keep it brief (1-2 sentences). Do not apologize excessively.
+
+5. **Greetings/appreciations** - Only acknowledge greetings or thanks if they appear WITH the question (e.g., "Hello, who is..."). For pure questions, skip pleasantries and answer directly.
+
+6. **Be concise** - Keep answers under 200 words. Be direct and factual.
+
+7. **Tone** - Professional and helpful, but not overly formal or apologetic.
+
+Now answer the user's question directly:"""
 
             # Build messages array with conversation history for Claude
             messages = []
