@@ -387,7 +387,7 @@ I have searched through the available parliamentary documents and found the foll
 Document: {selected_doc['name']}
 
 Document Content:
-{selected_doc['full_text'][:50000]}
+{selected_doc['full_text'][:100000]}
 
 Instructions for responding:
 - If the user's message is primarily a greeting (hello, hi, greetings, good morning/afternoon/evening, etc.), respond warmly, introduce yourself as the Parliament Watch Uganda chatbot, and offer to help with parliamentary questions. Be friendly and welcoming.
