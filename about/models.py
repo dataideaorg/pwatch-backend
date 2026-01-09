@@ -1,4 +1,5 @@
 from django.db import models
+from ckeditor.fields import RichTextField
 
 
 class Objective(models.Model):
@@ -51,3 +52,102 @@ class TeamMember(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.title}"
+
+
+class WhoWeAre(models.Model):
+    """
+    Model for "Who We Are" section content
+    """
+    title = models.CharField(max_length=200, default="Who We Are")
+    content = RichTextField(help_text="Content for the Who We Are section")
+    image = models.ImageField(upload_to='about/', blank=True, null=True, help_text="Optional image for the section")
+    is_active = models.BooleanField(default=True, help_text="Whether this section is active")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Who We Are'
+        verbose_name_plural = 'Who We Are'
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        # Ensure only one active instance
+        if self.is_active:
+            WhoWeAre.objects.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
+        super().save(*args, **kwargs)
+
+
+class OurStory(models.Model):
+    """
+    Model for "Our Story" section content
+    """
+    title = models.CharField(max_length=200, default="Our Story")
+    content = RichTextField(help_text="Content for the Our Story section")
+    image = models.ImageField(upload_to='about/', blank=True, null=True, help_text="Optional image for the section")
+    is_active = models.BooleanField(default=True, help_text="Whether this section is active")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Our Story'
+        verbose_name_plural = 'Our Story'
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        # Ensure only one active instance
+        if self.is_active:
+            OurStory.objects.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
+        super().save(*args, **kwargs)
+
+
+class WhatSetsUsApart(models.Model):
+    """
+    Model for "What Sets Us Apart" items (features/advantages)
+    """
+    title = models.CharField(max_length=200, help_text="Feature title")
+    description = models.TextField(help_text="Description of the feature")
+    icon = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Icon name or identifier (optional)"
+    )
+    order = models.IntegerField(default=0, help_text="Display order")
+    is_active = models.BooleanField(default=True, help_text="Whether this item is active")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', 'created_at']
+        verbose_name = 'What Sets Us Apart'
+        verbose_name_plural = 'What Sets Us Apart'
+
+    def __str__(self):
+        return self.title
+
+
+class Partner(models.Model):
+    """
+    Model for Partners
+    """
+    name = models.CharField(max_length=200, help_text="Partner organization name")
+    description = models.TextField(blank=True, help_text="Description of the partner")
+    logo = models.ImageField(upload_to='partners/', blank=True, null=True, help_text="Partner logo")
+    website_url = models.URLField(blank=True, help_text="Partner website URL")
+    order = models.IntegerField(default=0, help_text="Display order")
+    is_active = models.BooleanField(default=True, help_text="Whether this partner is active")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', 'name']
+        verbose_name = 'Partner'
+        verbose_name_plural = 'Partners'
+
+    def __str__(self):
+        return self.name
