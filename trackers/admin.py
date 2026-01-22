@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget, OrderPaper
+from .models import Bill, BillReading, MP, DebtData, Loan, Hansard, Budget, OrderPaper, Committee, CommitteeDocument
 
 
 class BillReadingInline(admin.TabularInline):
@@ -158,5 +158,52 @@ class OrderPaperAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Order Paper Information', {
             'fields': ('name', 'description', 'file', 'date_received')
+        }),
+    )
+
+
+class CommitteeDocumentInline(admin.TabularInline):
+    model = CommitteeDocument
+    extra = 1
+    fields = ['title', 'description', 'file', 'document_date']
+
+
+@admin.register(Committee)
+class CommitteeAdmin(admin.ModelAdmin):
+    list_display = ['title', 'chairperson', 'deputy_chairperson', 'begin_date', 'end_date', 'created_at']
+    list_filter = ['begin_date', 'end_date', 'created_at']
+    search_fields = ['title', 'description', 'chairperson__name', 'deputy_chairperson__name']
+    date_hierarchy = 'created_at'
+    ordering = ['title']
+    filter_horizontal = ['members']
+    inlines = [CommitteeDocumentInline]
+
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('title', 'description')
+        }),
+        ('Term', {
+            'fields': ('begin_date', 'end_date')
+        }),
+        ('Leadership', {
+            'fields': ('chairperson', 'deputy_chairperson')
+        }),
+        ('Members', {
+            'fields': ('members',)
+        }),
+    )
+
+
+@admin.register(CommitteeDocument)
+class CommitteeDocumentAdmin(admin.ModelAdmin):
+    list_display = ['title', 'committee', 'document_date', 'created_at']
+    list_filter = ['document_date', 'created_at', 'committee']
+    search_fields = ['title', 'description', 'committee__title']
+    date_hierarchy = 'document_date'
+    ordering = ['-document_date', '-created_at']
+
+    fieldsets = (
+        ('Document Information', {
+            'fields': ('committee', 'title', 'description', 'file', 'document_date')
         }),
     )

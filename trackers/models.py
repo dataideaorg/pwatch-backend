@@ -302,6 +302,10 @@ class Committee(models.Model):
     title = models.CharField(max_length=300, help_text="Committee name")
     description = models.TextField(blank=True, help_text="Committee description and mandate")
 
+    # Term
+    begin_date = models.DateField(null=True, blank=True, help_text="Committee term begin date")
+    end_date = models.DateField(null=True, blank=True, help_text="Committee term end date")
+
     # Leadership
     chairperson = models.ForeignKey(
         MP,
